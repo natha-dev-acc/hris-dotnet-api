@@ -13,5 +13,8 @@ namespace HRIS_API.Data
 
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
+        public DbSet<Role> Roles { get; set; }
+
     }
 }
