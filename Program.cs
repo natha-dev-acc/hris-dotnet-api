@@ -12,19 +12,36 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CONFIGURATION
 builder.Configuration.AddEnvironmentVariables();
 
+// SERVICES
 builder.Services.AddControllers();
 
+// DB CONTEXT
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
+// DEPENDENCY INJECTION
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<EmailService>();
 
+// CORS (TESTING SEMENTARA UNTUK FLUTTER WEB)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFlutterWeb", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+// JWT AUTHENTICATION
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
 
@@ -55,6 +72,7 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// SWAGGER
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -77,8 +95,10 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<AuthorizeCheckOperationFilter>();
 });
 
+// APP PIPELINE
 var app = builder.Build();
 
+// SWAGGER
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -86,7 +106,11 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
+// URUTAN PENTING
 app.UseHttpsRedirection();
+
+// CORS SEBELUM AUTH
+app.UseCors("AllowFlutterWeb");
 
 app.UseAuthentication();
 app.UseAuthorization();
